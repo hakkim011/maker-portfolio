@@ -50,16 +50,13 @@
   .cover-scene { display: none; }
   .cover::after { display: none; }
 
-  /* 오른쪽 대형 원형 장식 — 브랜드 블랙, 공간감 부여 */
+  /* 오른쪽 대형 토성 장식 */
   .cover-deco-circle {
     position: absolute;
     width: 520px;
     height: 520px;
-    background: var(--brand-black);
-    border-radius: 50%;
     top: -120px;
     right: -120px;
-    opacity: 0.08;
     pointer-events: none;
   }
   /* 작은 원 */
@@ -713,7 +710,15 @@
   <!-- 네온 바 (블랙) -->
   <div class="cover-neon-bar"></div>
   <!-- 장식 원형 -->
-  <div class="cover-deco-circle"></div>
+  <svg class="cover-deco-circle" viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg">
+    <g opacity="0.08">
+      <ellipse fill="none" stroke="#0b1215" stroke-width="4"   cx="260" cy="260" rx="222" ry="63"/>
+      <ellipse fill="none" stroke="#0b1215" stroke-width="3"   cx="260" cy="260" rx="244" ry="70"/>
+      <ellipse fill="none" stroke="#0b1215" stroke-width="2.5" cx="260" cy="260" rx="264" ry="77"/>
+      <ellipse fill="none" stroke="#0b1215" stroke-width="2"   cx="260" cy="260" rx="282" ry="83"/>
+      <circle  fill="#0b1215" cx="260" cy="260" r="200"/>
+    </g>
+  </svg>
   <div class="cover-deco-dot"></div>
 
   <!-- 상단: 아하오호 로고 -->
