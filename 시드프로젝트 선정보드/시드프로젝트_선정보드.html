@@ -339,8 +339,21 @@
     font-size: 12.5px;
     color: rgba(11,18,21,0.5);
     line-height: 1.55;
-    word-break: keep-all;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
   }
+
+  .reason-counter {
+    text-align: right;
+    font-size: 11px;
+    color: var(--ed-sub);
+    margin-top: 2px;
+  }
+  .reason-counter.over { color: #ff6b6b; }
 
   .board-empty {
     text-align: center;
@@ -467,6 +480,13 @@ function updateCard(id, field, value) {
   if (card) { card[field] = value; render(); }
 }
 
+function updateCounter(id, value) {
+  const el = document.getElementById('counter-' + id);
+  if (!el) return;
+  el.textContent = value.length + '/60';
+  el.className = 'reason-counter' + (value.length >= 60 ? ' over' : '');
+}
+
 function handleImage(input, id) {
   const file = input.files[0];
   if (!file) return;
@@ -512,8 +532,10 @@ function renderEditorCards() {
           style="font-weight:400"
           value="${escHtml(card.challenge)}"
           oninput="updateCard(${card.id},'challenge',this.value)">
-        <textarea class="card-reason-in" placeholder="선정 이유"
-          oninput="updateCard(${card.id},'reason',this.value)">${escHtml(card.reason)}</textarea>
+        <textarea class="card-reason-in" placeholder="선정 이유 (최대 60자)"
+          maxlength="60"
+          oninput="updateCard(${card.id},'reason',this.value);updateCounter(${card.id},this.value)">${escHtml(card.reason)}</textarea>
+        <div class="reason-counter" id="counter-${card.id}">${card.reason.length}/60</div>
       </div>
     </div>
   `).join('');
