@@ -364,6 +364,8 @@
 
   /* ── PRINT ── */
   @media print {
+    @page :first { margin: 0; }
+    @page { margin: 16mm 0 0 0; }
     @page { margin: 0; size: A3 landscape; }
     body { overflow: visible; height: auto; }
     .app { display: block; height: auto; }
