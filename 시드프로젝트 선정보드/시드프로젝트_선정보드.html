@@ -615,26 +615,35 @@ window.addEventListener('resize', scaleBoard);
 
 /* ── EXPORT IMAGE ── */
 function exportImage() {
-  const { kisu, week, period } = getInfo();
+  const { kisu, week } = getInfo();
   const wrap = document.getElementById('board-scale-wrap');
+  const board = document.getElementById('board');
   const prevTransform = wrap.style.transform;
   wrap.style.transform = 'scale(1)';
 
-  html2canvas(document.getElementById('board'), {
+  // 로고 img는 로컬 파일 환경에서 canvas taint 유발 → 캡처 중 숨김 처리
+  const logo = board.querySelector('.board-logo');
+  if (logo) logo.style.visibility = 'hidden';
+
+  html2canvas(board, {
     scale: 2,
-    useCORS: true,
     allowTaint: true,
+    useCORS: false,
     backgroundColor: '#FFF8F0',
+    logging: false,
   }).then(canvas => {
     wrap.style.transform = prevTransform;
+    if (logo) logo.style.visibility = '';
     const a = document.createElement('a');
     const name = [kisu, week].filter(Boolean).join('_') || '시드프로젝트';
     a.download = `${name}_시드프로젝트.png`;
     a.href = canvas.toDataURL('image/png');
     a.click();
-  }).catch(() => {
+  }).catch(err => {
     wrap.style.transform = prevTransform;
-    alert('이미지 저장 중 오류가 발생했어요. PDF로 저장해주세요.');
+    if (logo) logo.style.visibility = '';
+    console.error('html2canvas error:', err);
+    alert('이미지 저장에 실패했어요.\n브라우저 주소창에 파일 경로(file://)가 아닌 로컬 서버로 열거나, PDF로 저장해주세요.');
   });
 }
 
