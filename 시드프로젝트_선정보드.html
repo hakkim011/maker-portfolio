@@ -3,33 +3,249 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>시드 프로젝트 선정 보드</title>
+<title>시드 프로젝트 선정 보드 편집기</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
 
+  /* ── RESET ── */
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
     --brand-black: #0B1215;
     --brand-neon: #edff4b;
-    --bg: #FFF8F0;
-    --shadow: 0 4px 20px rgba(0,0,0,0.07);
+    --bg-board: #FFF8F0;
+    --ed-bg: #18191b;
+    --ed-surface: rgba(255,255,255,0.05);
+    --ed-border: rgba(255,255,255,0.09);
+    --ed-text: #e2e2e2;
+    --ed-sub: rgba(255,255,255,0.38);
   }
 
   body {
-    font-family: 'Pretendard', sans-serif;
-    background: var(--bg);
-    color: var(--brand-black);
+    font-family: 'Pretendard', 'Apple SD Gothic Neo', sans-serif;
+    height: 100vh;
+    overflow: hidden;
   }
 
-  .page {
+  /* ── APP LAYOUT ── */
+  .app { display: flex; height: 100vh; }
+
+  /* ─────────────────────────
+     EDITOR PANEL (left)
+  ───────────────────────── */
+  .editor {
+    width: 368px;
+    flex-shrink: 0;
+    background: var(--ed-bg);
+    color: var(--ed-text);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--ed-border);
+    overflow: hidden;
+  }
+
+  .editor-top {
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid var(--ed-border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .editor-top-logo { font-size: 18px; }
+  .editor-top-title { font-size: 14px; font-weight: 800; color: var(--brand-neon); }
+
+  .editor-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .editor-scroll::-webkit-scrollbar { width: 4px; }
+  .editor-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 2px; }
+
+  /* Section label */
+  .sec-label {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--ed-sub);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  /* Input group */
+  .ig { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .ig:last-child { margin-bottom: 0; }
+  .ig label { font-size: 11px; font-weight: 600; color: var(--ed-sub); }
+  .ig input, .ig textarea {
+    background: var(--ed-surface);
+    border: 1px solid var(--ed-border);
+    border-radius: 8px;
+    padding: 9px 11px;
+    color: var(--ed-text);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .ig input:focus, .ig textarea:focus { border-color: var(--brand-neon); }
+  .ig textarea { resize: none; height: 58px; line-height: 1.5; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* Add card button */
+  .add-card-btn {
+    width: 100%;
+    padding: 10px;
+    background: rgba(237,255,75,0.08);
+    border: 1.5px dashed rgba(237,255,75,0.3);
+    border-radius: 8px;
+    color: var(--brand-neon);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s;
+    margin-top: 4px;
+  }
+  .add-card-btn:hover { background: rgba(237,255,75,0.16); }
+
+  /* Card item in editor */
+  .card-item {
+    background: var(--ed-surface);
+    border: 1px solid var(--ed-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .card-item:last-child { margin-bottom: 0; }
+
+  .card-item-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 9px 13px;
+    background: rgba(255,255,255,0.03);
+    border-bottom: 1px solid var(--ed-border);
+  }
+  .card-item-hd span { font-size: 11px; font-weight: 700; color: var(--ed-sub); }
+  .card-del-btn {
+    background: none; border: none;
+    color: rgba(255,255,255,0.25);
+    cursor: pointer; font-size: 15px; line-height: 1;
+    transition: color 0.15s;
+  }
+  .card-del-btn:hover { color: #ff6b6b; }
+
+  .card-item-bd { padding: 11px 13px; display: flex; flex-direction: column; gap: 7px; }
+
+  /* Image upload area (in editor) */
+  .img-area {
+    width: 100%;
+    aspect-ratio: 4/3;
+    border: 1.5px dashed rgba(255,255,255,0.13);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.03);
+    transition: border-color 0.15s;
+    position: relative;
+  }
+  .img-area:hover { border-color: var(--brand-neon); }
+  .img-area img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .img-placeholder { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+  .img-placeholder .ph-icon { font-size: 22px; opacity: 0.35; }
+  .img-placeholder span { font-size: 11px; color: var(--ed-sub); font-weight: 600; }
+
+  .card-name-in {
+    background: var(--ed-surface);
+    border: 1px solid var(--ed-border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    color: var(--ed-text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .card-name-in:focus { border-color: var(--brand-neon); }
+
+  .card-reason-in {
+    background: var(--ed-surface);
+    border: 1px solid var(--ed-border);
+    border-radius: 8px;
+    padding: 8px 11px;
+    color: var(--ed-text);
+    font-family: inherit;
+    font-size: 12px;
+    outline: none;
+    width: 100%;
+    resize: none;
+    height: 56px;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+  }
+  .card-reason-in:focus { border-color: var(--brand-neon); }
+
+  /* Editor footer */
+  .editor-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--ed-border);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .exp-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.15s;
+  }
+  .exp-btn:hover { transform: translateY(-1px); }
+  .exp-btn.primary { background: var(--brand-neon); color: var(--brand-black); }
+  .exp-btn.secondary { background: rgba(255,255,255,0.07); color: var(--ed-text); }
+
+  /* ─────────────────────────
+     PREVIEW AREA (right)
+  ───────────────────────── */
+  .preview-area {
+    flex: 1;
+    overflow: auto;
+    background: #242424;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 36px;
+  }
+
+  .board-scale-wrap { transform-origin: top left; }
+
+  /* ─────────────────────────
+     BOARD (always 1200px)
+  ───────────────────────── */
+  #board {
     width: 1200px;
-    margin: 0 auto;
-    background: var(--bg);
+    background: var(--bg-board);
+    font-family: 'Pretendard', sans-serif;
   }
 
-  /* ─── 헤더 ─── */
   .board-header {
     background: var(--brand-neon);
     padding: 44px 64px 48px;
@@ -40,52 +256,30 @@
     justify-content: space-between;
   }
 
-  /* 배경 장식 — 원 */
-  .header-deco-circle {
+  .hd-deco-dot {
     position: absolute;
-    width: 420px;
-    height: 420px;
-    top: -100px;
-    right: -80px;
-    pointer-events: none;
-    opacity: 1;
-  }
-  .header-deco-dot {
-    position: absolute;
-    width: 140px;
-    height: 140px;
+    width: 140px; height: 140px;
     background: var(--brand-black);
     border-radius: 50%;
-    bottom: -40px;
-    right: 240px;
+    bottom: -40px; right: 240px;
     opacity: 0.06;
     pointer-events: none;
   }
 
-  .header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: relative;
-    z-index: 2;
+  .hd-left {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; gap: 16px;
   }
 
-  .board-logo {
-    width: 120px;
-  }
+  .board-logo { width: 120px; }
 
   .board-title {
-    font-family: 'Pretendard', sans-serif;
-    font-size: 42px;
-    font-weight: 900;
+    font-size: 42px; font-weight: 900;
     color: var(--brand-black);
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    line-height: 1.05; letter-spacing: -0.02em;
   }
-
   .board-title em {
-    display: inline;
-    font-style: normal;
+    display: inline; font-style: normal;
     background: var(--brand-black);
     color: var(--brand-neon);
     padding: 2px 12px 5px;
@@ -96,270 +290,339 @@
 
   .board-meta {
     font-family: 'Poppins', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 13px; font-weight: 600;
     color: rgba(11,18,21,0.45);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    letter-spacing: 0.1em; text-transform: uppercase;
   }
 
-  .header-right {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 4px;
+  .hd-right {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
   }
-
-  .header-count-label {
+  .hd-count-label {
     font-family: 'Poppins', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    color: rgba(11,18,21,0.4);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 11px; font-weight: 700;
+    color: rgba(11,18,21,0.3);
+    letter-spacing: 0.12em; text-transform: uppercase;
   }
-
-  .header-count-num {
+  .hd-count-num {
     font-family: 'Poppins', sans-serif;
-    font-size: 64px;
-    font-weight: 900;
-    color: var(--brand-black);
-    opacity: 0.15;
-    line-height: 1;
+    font-size: 72px; font-weight: 900;
+    color: var(--brand-black); opacity: 0.12; line-height: 1;
   }
 
-  /* ─── 카드 그리드 ─── */
-  .board-body {
-    padding: 40px 64px 64px;
-  }
+  /* Cards */
+  .board-body { padding: 40px 64px 64px; }
 
-  .cards-grid {
+  .board-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
   }
 
-  .seed-card {
-    background: #ffffff;
+  .b-card {
+    background: #fff;
     border-radius: 16px;
     overflow: hidden;
-    box-shadow: var(--shadow);
-    display: flex;
-    flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
   }
 
-  .seed-card-image-wrap {
-    width: 100%;
-    aspect-ratio: 4 / 3;
+  .b-card-img {
+    width: 100%; aspect-ratio: 4/3;
     overflow: hidden;
-    background: #e8e8e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
+    background: #ededed;
+    display: flex; align-items: center; justify-content: center;
   }
+  .b-card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .b-card-img .no-img { font-size: 38px; opacity: 0.18; }
 
-  .seed-card-image-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
+  .b-card-body { padding: 14px 16px 18px; display: flex; flex-direction: column; gap: 6px; }
 
-  /* 이미지 없을 때 플레이스홀더 */
-  .seed-card-image-wrap .placeholder-icon {
-    font-size: 36px;
-    opacity: 0.3;
-  }
+  .b-card-name { font-size: 15px; font-weight: 800; color: var(--brand-black); }
 
-  .seed-card-body {
-    padding: 14px 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    flex: 1;
-  }
-
-  .seed-card-name {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  .name-text {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--brand-black);
-  }
-
-  .seed-badge {
-    background: var(--brand-neon);
-    color: var(--brand-black);
-    font-family: 'Poppins', sans-serif;
-    font-size: 9px;
-    font-weight: 800;
-    padding: 2px 7px;
-    border-radius: 100px;
-    letter-spacing: 0.06em;
-    flex-shrink: 0;
-  }
-
-  .seed-card-reason {
-    font-size: 12.5px;
+  .b-card-tag {
+    display: inline-block;
+    background: rgba(11,18,21,0.07);
     color: rgba(11,18,21,0.55);
+    font-size: 11px; font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 100px;
+  }
+
+  .b-card-reason {
+    font-size: 12.5px;
+    color: rgba(11,18,21,0.5);
     line-height: 1.55;
     word-break: keep-all;
   }
 
-  /* ─── 저장 버튼 ─── */
-  .print-btn {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    background: var(--brand-black);
-    color: var(--brand-neon);
-    border: none;
-    border-radius: 12px;
-    padding: 14px 24px;
-    font-family: 'Pretendard', sans-serif;
+  .board-empty {
+    text-align: center;
+    padding: 60px 0;
+    color: rgba(11,18,21,0.2);
     font-size: 15px;
-    font-weight: 700;
-    cursor: pointer;
-    z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-    transition: transform 0.15s;
   }
-  .print-btn:hover { transform: translateY(-2px); }
 
-  /* ─── 인쇄 / PDF ─── */
+  /* ── PRINT ── */
   @media print {
     @page { margin: 0; size: A3 landscape; }
-    body { background: white; }
-    .print-btn { display: none !important; }
-    .page { width: 100%; }
-
-    .board-header {
-      padding: 36px 48px 40px;
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      background: #edff4b !important;
-    }
-    .board-title em {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .seed-badge {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
-    .board-body { padding: 28px 48px 48px; }
-    .cards-grid { gap: 14px; }
-    .seed-card { box-shadow: none; border: 1px solid #ebebeb; }
+    body { overflow: visible; height: auto; }
+    .app { display: block; height: auto; }
+    .editor { display: none !important; }
+    .preview-area { padding: 0; background: none; display: block; overflow: visible; }
+    .board-scale-wrap { transform: none !important; width: auto !important; height: auto !important; }
+    #board { width: 100%; box-shadow: none; }
+    .board-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: #edff4b !important; }
+    .board-title em { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .b-card-tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .b-card { box-shadow: none; border: 1px solid #ebebeb; }
   }
 </style>
 </head>
 <body>
+<div class="app">
 
-<div class="page">
-
-  <!-- 헤더 -->
-  <div class="board-header">
-
-    <!-- 배경 장식 — 토성 -->
-    <svg class="header-deco-circle" viewBox="0 0 420 420" overflow="visible" xmlns="http://www.w3.org/2000/svg">
-      <g opacity="0.08">
-        <ellipse fill="none" stroke="#0b1215" stroke-width="3.5" cx="210" cy="210" rx="178" ry="71"/>
-        <ellipse fill="none" stroke="#0b1215" stroke-width="2.5" cx="210" cy="210" rx="198" ry="79"/>
-        <ellipse fill="none" stroke="#0b1215" stroke-width="2"   cx="210" cy="210" rx="216" ry="86"/>
-        <ellipse fill="none" stroke="#0b1215" stroke-width="1.5" cx="210" cy="210" rx="232" ry="93"/>
-        <circle  fill="#0b1215" cx="210" cy="210" r="162"/>
-      </g>
-    </svg>
-    <div class="header-deco-dot"></div>
-
-    <div class="header-left">
-      <img class="board-logo" src="Logo1.svg" onerror="this.style.display='none'">
-      <div class="board-title">이번 주<br><em>시드 프로젝트</em></div>
-      <!-- ✏️ 기수 · 주차 · 날짜 수정 -->
-      <div class="board-meta">3기 · 3주차 · 2025.04.01</div>
+  <!-- ── 편집 패널 ── -->
+  <aside class="editor">
+    <div class="editor-top">
+      <span class="editor-top-logo">🌱</span>
+      <span class="editor-top-title">시드 프로젝트 선정 보드</span>
     </div>
 
-    <div class="header-right">
-      <div class="header-count-label">Selected</div>
-      <!-- ✏️ 선정 수 수정 -->
-      <div class="header-count-num">04</div>
-    </div>
+    <div class="editor-scroll">
 
-  </div>
-
-  <!-- 카드 그리드 -->
-  <div class="board-body">
-    <div class="cards-grid">
-
-      <!-- ✏️ 카드 복사·삭제해서 수 조절 -->
-
-      <div class="seed-card">
-        <div class="seed-card-image-wrap">
-          <!-- ✏️ src에 이미지 경로 입력. 없으면 아래 줄 삭제 -->
-          <img src="이미지 리소스/작품1.jpg" onerror="this.parentNode.innerHTML='<div class=\'placeholder-icon\'>🖼️</div>'">
-        </div>
-        <div class="seed-card-body">
-          <div class="seed-card-name">
-            <span class="name-text">이희준</span><!-- ✏️ 이름 -->
-            <span class="seed-badge">SEED</span>
+      <!-- 기본 정보 -->
+      <div>
+        <div class="sec-label">기본 정보</div>
+        <div class="row2">
+          <div class="ig">
+            <label>기수</label>
+            <input type="text" id="in-kisu" placeholder="3기" oninput="render()">
           </div>
-          <div class="seed-card-reason">주제를 독창적으로 해석하고 설명을 꼼꼼하게 작성했어요.</div><!-- ✏️ 선정 이유 -->
+          <div class="ig">
+            <label>주차</label>
+            <input type="text" id="in-week" placeholder="3주차" oninput="render()">
+          </div>
+        </div>
+        <div class="ig">
+          <label>날짜</label>
+          <input type="date" id="in-date" oninput="render()">
+        </div>
+        <div class="ig">
+          <label>챌린지명 (카드에 태그로 표시)</label>
+          <input type="text" id="in-challenge" placeholder="예: 바다 챌린지" oninput="render()">
         </div>
       </div>
 
-      <div class="seed-card">
-        <div class="seed-card-image-wrap">
-          <img src="이미지 리소스/작품2.jpg" onerror="this.parentNode.innerHTML='<div class=\'placeholder-icon\'>🖼️</div>'">
-        </div>
-        <div class="seed-card-body">
-          <div class="seed-card-name">
-            <span class="name-text">김지민</span>
-            <span class="seed-badge">SEED</span>
-          </div>
-          <div class="seed-card-reason">아이디어가 신선하고 다른 메이커들에게 영감을 줄 수 있는 작품이에요.</div>
-        </div>
-      </div>
-
-      <div class="seed-card">
-        <div class="seed-card-image-wrap">
-          <img src="이미지 리소스/작품3.jpg" onerror="this.parentNode.innerHTML='<div class=\'placeholder-icon\'>🖼️</div>'">
-        </div>
-        <div class="seed-card-body">
-          <div class="seed-card-name">
-            <span class="name-text">박서연</span>
-            <span class="seed-badge">SEED</span>
-          </div>
-          <div class="seed-card-reason">완성도 높은 결과물과 함께 과정을 잘 기록했어요.</div>
-        </div>
-      </div>
-
-      <div class="seed-card">
-        <div class="seed-card-image-wrap">
-          <img src="이미지 리소스/작품4.jpg" onerror="this.parentNode.innerHTML='<div class=\'placeholder-icon\'>🖼️</div>'">
-        </div>
-        <div class="seed-card-body">
-          <div class="seed-card-name">
-            <span class="name-text">최민준</span>
-            <span class="seed-badge">SEED</span>
-          </div>
-          <div class="seed-card-reason">소통을 활발하게 하며 커뮤니티에 긍정적인 영향을 줬어요.</div>
-        </div>
+      <!-- 카드 -->
+      <div>
+        <div class="sec-label">선정 카드</div>
+        <div id="cards-container"></div>
+        <button class="add-card-btn" onclick="addCard()">+ 카드 추가</button>
       </div>
 
     </div>
-  </div>
+
+    <div class="editor-footer">
+      <button class="exp-btn primary" onclick="exportImage()">🖼️ 이미지로 저장</button>
+      <button class="exp-btn secondary" onclick="window.print()">🖨️ PDF로 저장</button>
+    </div>
+  </aside>
+
+  <!-- ── 미리보기 ── -->
+  <main class="preview-area" id="preview-area">
+    <div class="board-scale-wrap" id="board-scale-wrap">
+      <div id="board"></div>
+    </div>
+  </main>
 
 </div>
 
-<button class="print-btn" onclick="window.print()">🖨️ PDF / 이미지로 저장</button>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
+/* ── STATE ── */
+let cards = [];
+let nextId = 1;
 
+/* ── HELPERS ── */
+function getInfo() {
+  const kisu = document.getElementById('in-kisu').value.trim();
+  const week = document.getElementById('in-week').value.trim();
+  const dateRaw = document.getElementById('in-date').value;
+  const challenge = document.getElementById('in-challenge').value.trim();
+  let date = '';
+  if (dateRaw) {
+    const [y, m, d] = dateRaw.split('-');
+    date = `${y}.${m}.${d}`;
+  }
+  return { kisu, week, date, challenge };
+}
+
+/* ── CARD ACTIONS ── */
+function addCard() {
+  const id = nextId++;
+  cards.push({ id, image: null, name: '', reason: '' });
+  renderEditorCards();
+  render();
+}
+
+function removeCard(id) {
+  cards = cards.filter(c => c.id !== id);
+  renderEditorCards();
+  render();
+}
+
+function updateCard(id, field, value) {
+  const card = cards.find(c => c.id === id);
+  if (card) { card[field] = value; render(); }
+}
+
+function handleImage(input, id) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const card = cards.find(c => c.id === id);
+    if (!card) return;
+    card.image = e.target.result;
+    // update just the img area in editor (no full re-render to preserve focus)
+    const area = document.getElementById('img-area-' + id);
+    if (area) {
+      area.innerHTML = `<img src="${e.target.result}">
+        <input type="file" id="file-${id}" accept="image/*" style="display:none" onchange="handleImage(this,${id})">`;
+    }
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function triggerUpload(id) {
+  document.getElementById('file-' + id).click();
+}
+
+/* ── RENDER EDITOR CARDS ── */
+function renderEditorCards() {
+  document.getElementById('cards-container').innerHTML = cards.map((card, i) => `
+    <div class="card-item">
+      <div class="card-item-hd">
+        <span>카드 ${i + 1}</span>
+        <button class="card-del-btn" onclick="removeCard(${card.id})">✕</button>
+      </div>
+      <div class="card-item-bd">
+        <div class="img-area" id="img-area-${card.id}" onclick="triggerUpload(${card.id})">
+          ${card.image
+            ? `<img src="${card.image}">`
+            : `<div class="img-placeholder"><div class="ph-icon">🖼️</div><span>클릭해서 이미지 추가</span></div>`}
+          <input type="file" id="file-${card.id}" accept="image/*" style="display:none" onchange="handleImage(this,${card.id})">
+        </div>
+        <input class="card-name-in" type="text" placeholder="이름"
+          value="${escHtml(card.name)}"
+          oninput="updateCard(${card.id},'name',this.value)">
+        <textarea class="card-reason-in" placeholder="선정 이유"
+          oninput="updateCard(${card.id},'reason',this.value)">${escHtml(card.reason)}</textarea>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── RENDER BOARD ── */
+function render() {
+  const { kisu, week, date, challenge } = getInfo();
+  const metaParts = [kisu, week, date].filter(Boolean);
+  const count = String(cards.length).padStart(2, '0');
+
+  document.getElementById('board').innerHTML = `
+    <div class="board-header">
+      <svg style="position:absolute;width:420px;height:420px;top:-100px;right:-80px;pointer-events:none;"
+           viewBox="0 0 420 420" overflow="visible" xmlns="http://www.w3.org/2000/svg">
+        <g opacity="0.08">
+          <ellipse fill="none" stroke="#0b1215" stroke-width="3.5" cx="210" cy="210" rx="178" ry="71"/>
+          <ellipse fill="none" stroke="#0b1215" stroke-width="2.5" cx="210" cy="210" rx="198" ry="79"/>
+          <ellipse fill="none" stroke="#0b1215" stroke-width="2"   cx="210" cy="210" rx="216" ry="86"/>
+          <ellipse fill="none" stroke="#0b1215" stroke-width="1.5" cx="210" cy="210" rx="232" ry="93"/>
+          <circle  fill="#0b1215" cx="210" cy="210" r="162"/>
+        </g>
+      </svg>
+      <div class="hd-deco-dot"></div>
+      <div class="hd-left">
+        <img class="board-logo" src="Logo1.svg" onerror="this.style.display='none'">
+        <div class="board-title">이번 주<br><em>시드 프로젝트</em></div>
+        ${metaParts.length ? `<div class="board-meta">${metaParts.join(' · ')}</div>` : ''}
+      </div>
+      <div class="hd-right">
+        <div class="hd-count-label">Selected</div>
+        <div class="hd-count-num">${count}</div>
+      </div>
+    </div>
+    <div class="board-body">
+      ${cards.length === 0
+        ? `<div class="board-empty">← 왼쪽에서 카드를 추가해보세요</div>`
+        : `<div class="board-grid">
+            ${cards.map(card => `
+              <div class="b-card">
+                <div class="b-card-img">
+                  ${card.image ? `<img src="${card.image}">` : `<div class="no-img">🖼️</div>`}
+                </div>
+                <div class="b-card-body">
+                  <div class="b-card-name">${escHtml(card.name) || '이름'}</div>
+                  ${challenge ? `<div><span class="b-card-tag">${escHtml(challenge)}</span></div>` : ''}
+                  <div class="b-card-reason">${escHtml(card.reason)}</div>
+                </div>
+              </div>`).join('')}
+          </div>`}
+    </div>
+  `;
+  scaleBoard();
+}
+
+/* ── SCALE ── */
+function scaleBoard() {
+  const area = document.getElementById('preview-area');
+  const wrap = document.getElementById('board-scale-wrap');
+  const board = document.getElementById('board');
+  const availW = area.clientWidth - 72;
+  const boardW = 1200;
+  const scale = Math.min(availW / boardW, 1);
+  wrap.style.transform = `scale(${scale})`;
+  wrap.style.width = boardW + 'px';
+  const scaledH = board.scrollHeight * scale;
+  wrap.style.marginBottom = (scaledH - board.scrollHeight) + 'px';
+}
+
+window.addEventListener('resize', scaleBoard);
+
+/* ── EXPORT IMAGE ── */
+function exportImage() {
+  const { kisu, week } = getInfo();
+  const wrap = document.getElementById('board-scale-wrap');
+  const prevTransform = wrap.style.transform;
+  wrap.style.transform = 'scale(1)';
+
+  html2canvas(document.getElementById('board'), {
+    scale: 2,
+    useCORS: true,
+    allowTaint: true,
+    backgroundColor: '#FFF8F0',
+  }).then(canvas => {
+    wrap.style.transform = prevTransform;
+    const a = document.createElement('a');
+    const name = [kisu, week].filter(Boolean).join('_') || '시드프로젝트';
+    a.download = `${name}_시드프로젝트.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }).catch(() => {
+    wrap.style.transform = prevTransform;
+    alert('이미지 저장 중 오류가 발생했어요. PDF로 저장해주세요.');
+  });
+}
+
+/* ── INIT ── */
+addCard();
+addCard();
+</script>
 </body>
 </html>
